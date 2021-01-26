@@ -1,8 +1,10 @@
 package com.imooc.dto;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.imooc.validator.MyConstraint;
 import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.constraints.Past;
 import java.util.Date;
 
 public class User {
@@ -15,11 +17,13 @@ public class User {
 
     private String id;
 
+    @MyConstraint(message = "这是一个测试")
     private String username;
 
-    @NotBlank
+    @NotBlank(message = "密码不能为空")
     private String password;
 
+    @Past(message = "生日必须是过去的时间")
     private Date birthday;
 
     @JsonView(UserSimpleView.class)
