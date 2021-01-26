@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.imooc.dto.User;
 import com.imooc.dto.UserQueryCondition;
 import com.imooc.exception.UserNotExistException;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +23,7 @@ public class UserController {
 
     @JsonView(User.UserSimpleView.class)
     @GetMapping
+    @ApiOperation(value = "用户查询服务")
     public List<User> query(UserQueryCondition condition,
                             @PageableDefault(page = 2, size = 17, sort = "username,asc") Pageable pageable) {
 
@@ -39,7 +42,7 @@ public class UserController {
 
     @JsonView(User.UserDetailView.class)
     @GetMapping("/{id:\\d+}")
-    public User getInfo(@PathVariable String id) {
+    public User getInfo(@ApiParam("用户id") @PathVariable String id) {
 		//throw new RuntimeException("user not found");
         System.out.println("进入getInfo服务");
         User user = new User();
