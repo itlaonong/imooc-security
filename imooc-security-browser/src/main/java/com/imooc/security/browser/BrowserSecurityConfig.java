@@ -10,8 +10,8 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
 
 
-        //http.formLogin()
-        http.httpBasic()
+        http.formLogin()
+        //http.httpBasic()
                 .and()
                 .authorizeRequests()
                 .anyRequest()
