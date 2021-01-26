@@ -13,3 +13,5 @@
 4. 前面几节课的代码中我将UserController的包弄错了，和老师的不一样，后面的代码调整过来了。
 
 5. 课程3-7和3-8的标题应该是弄反了。 
+
+6. 引入wiremock运行异常```java.lang.ClassNotFoundException: org.apache.http.HttpEntity```，增加了httpclient依赖
