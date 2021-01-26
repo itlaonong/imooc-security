@@ -1,8 +1,9 @@
-package com.imooc.security.browser;
+package com.imooc.web.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.imooc.dto.User;
 import com.imooc.dto.UserQueryCondition;
+import com.imooc.exception.UserNotExistException;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.springframework.data.domain.Pageable;
@@ -39,19 +40,16 @@ public class UserController {
     @JsonView(User.UserDetailView.class)
     @GetMapping("/{id:\\d+}")
     public User getInfo(@PathVariable String id) {
-//		throw new RuntimeException("user not exist");
-        System.out.println("进入getInfo服务");
+		throw new UserNotExistException("1");
+        /* System.out.println("进入getInfo服务");
         User user = new User();
         user.setUsername("tom");
-        return user;
+        return user;*/
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User user, BindingResult errors) {
+    public User create(@Valid @RequestBody User user) {
 
-        if (errors.hasErrors()) {
-            errors.getAllErrors().stream().forEach(error -> System.out.println(error.getDefaultMessage()));
-        }
         System.out.println(user.getId());
         System.out.println(user.getUsername());
         System.out.println(user.getPassword());
