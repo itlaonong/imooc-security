@@ -20,11 +20,15 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
         http.formLogin()
+                .loginPage("/imooc-signIn.html")
+                .loginProcessingUrl("/authentication/form")
         //http.httpBasic()
                 .and()
                 .authorizeRequests()
+                .antMatchers("/imooc-signIn.html").permitAll()
                 .anyRequest()
-                .authenticated();
+                .authenticated()
+        .and().csrf().disable();
 
     }
 }
