@@ -1,9 +1,13 @@
 package com.imooc.security.core.validate.code;
 
+import com.imooc.security.core.properties.SecurityProperties;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.social.connect.web.HttpSessionSessionStrategy;
 import org.springframework.social.connect.web.SessionStrategy;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -14,12 +18,22 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ValidateCodeFilter extends OncePerRequestFilter {
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
     private AuthenticationFailureHandler authenticationFailureHandler;
 
+    private SecurityProperties securityProperties;
+
     private SessionStrategy sessionStrategy = new HttpSessionSessionStrategy();
+
+    private AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    private Set<String> urls = new HashSet<>();
 
     public ValidateCodeFilter(AuthenticationFailureHandler authenticationFailureHandler) {
         this.authenticationFailureHandler = authenticationFailureHandler;
@@ -27,12 +41,19 @@ public class ValidateCodeFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (StringUtils.equals("/authentication/form", request.getRequestURI())
-                && StringUtils.equalsIgnoreCase(request.getMethod(), "post")) {
+        boolean action = false;
+        for (String url : urls) {
+            logger.info("url = {}",url);
+            if (pathMatcher.match(url, request.getRequestURI())) {
+                action = true;
+                break;
+            }
+        }
+        if (action) {
             try {
                 validate(new ServletWebRequest(request));
             } catch (ValidateCodeException e) {
-                authenticationFailureHandler.onAuthenticationFailure(request,response,e);
+                authenticationFailureHandler.onAuthenticationFailure(request, response, e);
                 return;
             }
         }
@@ -70,5 +91,30 @@ public class ValidateCodeFilter extends OncePerRequestFilter {
         }
 
         sessionStrategy.removeAttribute(request, ValidateCodeController.SESSION_KEY);
+    }
+
+    public void afterPropertiesSet() throws ServletException {
+        super.afterPropertiesSet();
+        String[] configUrls = StringUtils.splitByWholeSeparatorPreserveAllTokens(securityProperties.getCode().getImage().getUrl(), ",");
+        for (String configUrl : configUrls) {
+            urls.add(configUrl);
+        }
+        urls.add("/authentication/form");
+    }
+
+    public AuthenticationFailureHandler getAuthenticationFailureHandler() {
+        return authenticationFailureHandler;
+    }
+
+    public void setAuthenticationFailureHandler(AuthenticationFailureHandler authenticationFailureHandler) {
+        this.authenticationFailureHandler = authenticationFailureHandler;
+    }
+
+    public SecurityProperties getSecurityProperties() {
+        return securityProperties;
+    }
+
+    public void setSecurityProperties(SecurityProperties securityProperties) {
+        this.securityProperties = securityProperties;
     }
 }
