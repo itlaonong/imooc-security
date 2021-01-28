@@ -44,7 +44,6 @@ public class ValidateCodeFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         boolean action = false;
         for (String url : urls) {
-            logger.info("url = {}",url);
             if (pathMatcher.match(url, request.getRequestURI())) {
                 action = true;
                 break;

@@ -1,6 +1,9 @@
 package com.imooc.security.browser;
 
+import com.imooc.security.core.authentication.mobile.SmsCodeAuthenticationSecurityConfig;
+import com.imooc.security.core.properties.SecurityConstants;
 import com.imooc.security.core.properties.SecurityProperties;
+import com.imooc.security.core.validate.code.SmsCodeFilter;
 import com.imooc.security.core.validate.code.ValidateCodeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +32,9 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
     private SecurityProperties securityProperties;
 
     @Autowired
+    private SmsCodeAuthenticationSecurityConfig smsCodeAuthenticationSecurityConfig;
+
+    @Autowired
     private AuthenticationSuccessHandler imoocAuthenticationSuccessHandler;
 
     @Autowired
@@ -46,17 +52,22 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
     public PersistentTokenRepository persistentTokenRepository() {
         JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
         tokenRepository.setDataSource(dataSource);
-		//tokenRepository.setCreateTableOnStartup(true);
+        //tokenRepository.setCreateTableOnStartup(true);
         return tokenRepository;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        ValidateCodeFilter filter = new ValidateCodeFilter(imoocAuthenticationFailureHandler);
-        filter.setSecurityProperties(securityProperties);
-        filter.afterPropertiesSet();
+        ValidateCodeFilter imageCodeFilter = new ValidateCodeFilter(imoocAuthenticationFailureHandler);
+        imageCodeFilter.setSecurityProperties(securityProperties);
+        imageCodeFilter.afterPropertiesSet();
 
-        http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
+        SmsCodeFilter smsCodeFilter = new SmsCodeFilter(imoocAuthenticationFailureHandler);
+        smsCodeFilter.setSecurityProperties(securityProperties);
+        smsCodeFilter.afterPropertiesSet();
+
+        http.addFilterBefore(imageCodeFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(smsCodeFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin()
                 .loginPage("/authentication/require")
                 .loginProcessingUrl("/authentication/form")
@@ -67,15 +78,17 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
                 .tokenRepository(persistentTokenRepository())
                 .tokenValiditySeconds(securityProperties.getBrowser().getRememberMeSeconds())
                 .userDetailsService(userDetailsService)
-                //http.httpBasic()
                 .and()
                 .authorizeRequests()
                 .antMatchers("/authentication/require",
                         securityProperties.getBrowser().getLoginPage(),
-                        "/code/*").permitAll()
+                        SecurityConstants.DEFAULT_VALIDATE_CODE_URL_PREFIX + "/*")
+                .permitAll()
                 .anyRequest()
                 .authenticated()
-                .and().csrf().disable();
+                .and()
+                .csrf().disable()
+                .apply(smsCodeAuthenticationSecurityConfig);
 
     }
 }
