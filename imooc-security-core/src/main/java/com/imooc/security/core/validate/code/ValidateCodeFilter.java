@@ -1,6 +1,7 @@
 package com.imooc.security.core.validate.code;
 
 import com.imooc.security.core.properties.SecurityProperties;
+import com.imooc.security.core.validate.code.image.ImageCode;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
