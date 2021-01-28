@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ValidateCodeFilter extends OncePerRequestFilter {
+public class SmsCodeFilter extends OncePerRequestFilter {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -36,7 +36,7 @@ public class ValidateCodeFilter extends OncePerRequestFilter {
 
     private Set<String> urls = new HashSet<>();
 
-    public ValidateCodeFilter(AuthenticationFailureHandler authenticationFailureHandler) {
+    public SmsCodeFilter(AuthenticationFailureHandler authenticationFailureHandler) {
         this.authenticationFailureHandler = authenticationFailureHandler;
     }
 
@@ -63,13 +63,13 @@ public class ValidateCodeFilter extends OncePerRequestFilter {
 
     private void validate(ServletWebRequest request) {
 
-        ImageCode codeInSession = (ImageCode) sessionStrategy.getAttribute(request,
-                ValidateCodeProcessor.SESSION_KEY_PREFIX+"IMAGE");
+        ValidateCode codeInSession = (ValidateCode) sessionStrategy.getAttribute(request,
+                ValidateCodeProcessor.SESSION_KEY_PREFIX + "SMS");
 
         String codeInRequest;
         try {
             codeInRequest = ServletRequestUtils.getStringParameter(request.getRequest(),
-                    "imageCode");
+                    "smsCode");
         } catch (ServletRequestBindingException e) {
             throw new ValidateCodeException("获取验证码的值失败");
         }
@@ -83,7 +83,7 @@ public class ValidateCodeFilter extends OncePerRequestFilter {
         }
 
         if (codeInSession.isExpired()) {
-            sessionStrategy.removeAttribute(request, ValidateCodeProcessor.SESSION_KEY_PREFIX+"IMAGE");
+            sessionStrategy.removeAttribute(request, ValidateCodeProcessor.SESSION_KEY_PREFIX + "SMS");
             throw new ValidateCodeException("验证码已过期");
         }
 
@@ -91,18 +91,18 @@ public class ValidateCodeFilter extends OncePerRequestFilter {
             throw new ValidateCodeException("验证码不匹配");
         }
 
-        sessionStrategy.removeAttribute(request, ValidateCodeProcessor.SESSION_KEY_PREFIX+"IMAGE");
+        sessionStrategy.removeAttribute(request, ValidateCodeProcessor.SESSION_KEY_PREFIX + "SMS");
     }
 
     public void afterPropertiesSet() throws ServletException {
         super.afterPropertiesSet();
         if(StringUtils.isNotBlank(securityProperties.getCode().getImage().getUrl())){
-            String[] configUrls = StringUtils.splitByWholeSeparatorPreserveAllTokens(securityProperties.getCode().getImage().getUrl(), ",");
+            String[] configUrls = StringUtils.splitByWholeSeparatorPreserveAllTokens(securityProperties.getCode().getSms().getUrl(), ",");
             for (String configUrl : configUrls) {
                 urls.add(configUrl);
             }
         }
-        urls.add("/authentication/form");
+        urls.add("/authentication/mobile");
     }
 
     public AuthenticationFailureHandler getAuthenticationFailureHandler() {
