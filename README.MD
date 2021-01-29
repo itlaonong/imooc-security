@@ -15,3 +15,8 @@
 5. 课程3-7和3-8的标题应该是弄反了。 
 
 6. 引入wiremock运行异常```java.lang.ClassNotFoundException: org.apache.http.HttpEntity```，增加了httpclient依赖
+
+
+## 2021-01-29
+
+QQ登陆部分，因为没有申请QQ互联应用，无法测试代码。仓库中QQ登陆的appId和appSecret是从[imooc-SpringSecurity](https://github.com/Mr-zhango/imooc-SpringSecurity/blob/master/imooc-security-demo/src/main/resources/application.properties) 项目中复制而来，但是并不能正常使用。
